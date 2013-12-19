@@ -26,8 +26,8 @@ namespace ModularBot
 		void SetOutput(IPluginOutput output);
 		
 		//IRC Actions
-		CommandResponse OnRegistered();
-		CommandResponse OnNames(string channel, string[] nicks, bool last);
+		void OnRegistered();
+		void OnNames(string channel, string[] nicks, bool last);
 		CommandResponse OnJoined(string user, string channel);
 		CommandResponse OnPart(string user, string channel, string reason);
 		CommandResponse OnPublic(string user, string channel, string message);

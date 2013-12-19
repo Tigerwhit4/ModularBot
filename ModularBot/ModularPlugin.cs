@@ -27,14 +27,14 @@ namespace ModularBot
 		public abstract void Stop();
 		
 		#region IRC Commands
-		public virtual CommandResponse OnRegistered()
+		public virtual void OnRegistered()
 		{
-			return null;
+			
 		}
 		
-		public virtual CommandResponse OnNames(string channel, string[] nicks, bool last)
+		public virtual void OnNames(string channel, string[] nicks, bool last)
 		{
-			return null;
+			
 		}
 		
 		public virtual CommandResponse OnJoined(string user, string channel)
@@ -62,7 +62,7 @@ namespace ModularBot
 			return null;
 		}
 		
-		public CommandResponse OnCommand(string user, string command, string[] args)
+		public virtual CommandResponse OnCommand(string user, string command, string[] args)
 		{
 			return null;
 		}

@@ -52,13 +52,14 @@ namespace ModularBotServer
 			Thread listenThread = new Thread(ListenLoop);
 			listenThread.Start();
 			
-			m_MenuBuilder = new ServerMenuBuilder(m_Plugins, m_Output);
+			m_MenuBuilder = new ServerMenuBuilder(m_Plugins, m_Output, m_IRCConnection as ServerIRCConnection);
 		}
 		
 		private bool SetupIRC()
 		{
-			m_IRCConnection = new ServerIRCConnection();
+			m_IRCConnection = new ServerIRCConnection(m_Output);
 			
+			//Connection Information
 			string username = "", password = "", channel = "";
 			username = ConfigurationManager.AppSettings["IRCUsername"];
 			password = ConfigurationManager.AppSettings["IRCPassword"];
@@ -75,6 +76,9 @@ namespace ModularBotServer
 				Abort("Channel setting is empty");
 				return false;
 			}
+			
+			//Set the plugins
+			m_IRCConnection.SetPlugins(m_Plugins);
 			
 			//Set the command prefix
 			string commandPrefix = ConfigurationManager.AppSettings["CommandPrefix"];
@@ -210,6 +214,9 @@ namespace ModularBotServer
 			
 			//Run the stop code
 			StopPlugins();
+			
+			//Stop the IRC bot
+			m_IRCConnection.Disconnect();
 			
 			//Leave a final readkey before exiting
 			m_Output.Pause();

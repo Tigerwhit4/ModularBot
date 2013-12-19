@@ -20,6 +20,8 @@ namespace ModularBotServer
 		bool Connect(string username, string password);
 		bool Connect(string channel, string username, string password);
 		
+		void Disconnect();
+		
 		void ResetConnection();
 		void SetPlugins(List<IModularPlugin> plugins);
 		void SetCommandPrefix(string commandPrefix);

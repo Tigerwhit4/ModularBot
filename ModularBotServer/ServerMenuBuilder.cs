@@ -17,14 +17,16 @@ namespace ModularBotServer
 	{
 		private List<IModularPlugin> plugins;
 		private IServerOutput output;
+		private ServerIRCConnection ircConnection;
 		
 		private IModularPlugin innerPlugin;
 		private MenuLocation location = MenuLocation.Main;
 		
-		public ServerMenuBuilder(List<IModularPlugin> plugins, IServerOutput output)
+		public ServerMenuBuilder(List<IModularPlugin> plugins, IServerOutput output, ServerIRCConnection ircConnection)
 		{
 			this.plugins = plugins;
 			this.output = output;
+			this.ircConnection = ircConnection;
 		}
 		
 		public bool BuildMenu(string input)
@@ -44,6 +46,9 @@ namespace ModularBotServer
 								return true;
 							case(1):
 								return false;
+							case(2):
+								SendFakePublic();
+								return true;
 							default:
 								return true;
 						}
@@ -91,6 +96,17 @@ namespace ModularBotServer
 				output.ThrowMenu(i, plugins[i].GetPluginName());
 			output.ThrowMenu(pluginCount, "Return to Main");
 			location = MenuLocation.ListPlugins;
+		}
+		
+		private void SendFakePublic()
+		{
+			string user = "", message = "", channel = "Channel";
+			Console.WriteLine("User: ");
+			user = Console.ReadLine();
+			Console.WriteLine("Message: ");
+			message = Console.ReadLine();
+			ircConnection.IrcPublic(new Sharkbite.Irc.UserInfo(user, user, ""), channel, message);
+			Console.ReadKey();
 		}
 		
 		private enum MenuLocation

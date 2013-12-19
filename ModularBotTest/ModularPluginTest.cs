@@ -38,11 +38,23 @@ namespace ModularBotTest
 			return name;
 		}
 		
-		public override CommandResponse OnPublic(string user, string channel, string message)
+		public override CommandResponse OnCommand(string user, string command, string[] args)
 		{
-			CommandResponse response = CommandResponse.None;
-			response.Message = user + " said " + message;
-			return response;
+			if(command == "info" && args.Length == 0)
+			{
+				return new CommandResponse("This is the ModularBot Test Plugin. Type \"!info 1\" to continue", CommandResponse.ResponseAction.None);
+			}
+			if(command == "info" && args.Length == 1)
+			{
+				switch (args[0]) {
+					case("1"):
+						return new CommandResponse("This plugin comes default with ModularBot to test it.", CommandResponse.ResponseAction.None);
+						break;
+					default:
+						break;
+				}
+			}
+			return CommandResponse.None;
 		}
 	}
 }

@@ -20,11 +20,17 @@ namespace ModularBotServer
 		private string _commandPrefix;
 		private Connection _irc;
 		private List<IModularPlugin> _plugins = new List<IModularPlugin>();
+		private IServerOutput _output;
 		
 		private List<string> _moderators, _users, _subscribers, _admins;
 		private bool _hasMod;
 		
 		private const string IRCHOST = "irc.twitch.tv";
+		
+		public ServerIRCConnection(IServerOutput output)
+		{
+			_output = output;
+		}
 		
 		public void SetPlugins(List<IModularPlugin> plugins)
 		{
@@ -44,7 +50,7 @@ namespace ModularBotServer
 			//Create the new IRC connection
 			ConnectionArgs connArgs = new ConnectionArgs(_username, IRCHOST);
 			connArgs.ServerPassword = _password;
-			_irc = new Connection(connArgs);
+			_irc = new Connection(connArgs, false, false);
 			
 			//Reset the lists
 			_moderators = new List<string>();
@@ -59,6 +65,8 @@ namespace ModularBotServer
 			//Bottom of the barrel
 			ResetConnection();
 			
+			if(!Identd.IsRunning()) Identd.Start(_username);
+			
 			_irc.Listener.OnRegistered += IrcRegistered;
             _irc.Listener.OnNames += IrcOnNames;
             _irc.Listener.OnJoin += IrcJoined;
@@ -67,7 +75,16 @@ namespace ModularBotServer
             _irc.Listener.OnPrivate += IrcPrivate;
             _irc.Listener.OnChannelModeChange += OnChannelModeChange;
 			
-			//todo: Write the IRC Connection
+			try
+            {
+                //Attempt a connection the server
+                _irc.Connect();
+            }
+            catch(Exception ex)
+            {
+                return false;
+            }
+            
             return true;
 		}
 		
@@ -91,8 +108,11 @@ namespace ModularBotServer
 		}
 		#endregion
 		
-		private void IrcPublic(UserInfo user, string channel, string message)
+		#region IRC Actions
+		public void IrcPublic(UserInfo user, string channel, string message)
         {
+			List<CommandResponse> responses = new List<CommandResponse>();
+			
 			//Check for command
 			if(message.StartsWith(_commandPrefix))
 			{
@@ -105,14 +125,20 @@ namespace ModularBotServer
 				for(int i = 0; i < args.Length; i++)
 					args[i] = commandSplit[i+1];
 				
-				_plugins.ForEach(s => s.OnCommand(user.User, command, args));
+				_plugins.ForEach(s => responses.Add(s.OnCommand(user.User, command, args)));
 			}
-			
-			_plugins.ForEach(s => s.OnPublic(user.User, channel, message));
+			foreach(var plugin in _plugins)
+			{
+				var response = plugin.OnPublic(user.User, channel, message);
+				responses.Add(response);
+			}
+			//_plugins.ForEach(s => responses.Add(s.OnPublic(user.User, channel, message)));
+			CommandRespond(responses, user.User);
         }
 
-        void IrcPrivate(UserInfo user, string message)
+        public void IrcPrivate(UserInfo user, string message)
         {
+        	List<CommandResponse> responses = new List<CommandResponse>();
             //Split into parts
             var messageSplit = message.Split(' ');
             //Check for empty array
@@ -127,35 +153,40 @@ namespace ModularBotServer
             {
                 _admins.Add(messageSplit[1]);
             }
-            _plugins.ForEach(s => s.OnPrivate(user.User, message));
+            _plugins.ForEach(s => responses.Add(s.OnPrivate(user.User, message)));
+            CommandRespond(responses, user.User);
         }
 
-        private void IrcJoined(UserInfo user, string channel)
+        public void IrcJoined(UserInfo user, string channel)
         {
             //Check to see if the connecting user is the bot
             if (user.User.ToLower() == _username)
                 _irc.Sender.Raw("JTVCLIENT"); //Allows the bot to receive OP/Mod and sub info
 
             _users.Add(user.User);
-            _plugins.ForEach(s => s.OnJoined(user.User, channel));
+            List<CommandResponse> responses = new List<CommandResponse>();
+            _plugins.ForEach(s => responses.Add(s.OnJoined(user.User, channel)));
+            CommandRespond(responses, user.User);
         }
 
-        void IrcPart(UserInfo user, string channel, string reason)
+        public void IrcPart(UserInfo user, string channel, string reason)
         {
             _users.Remove(user.User);
 
             if (_moderators.Contains(user.User)) _moderators.Remove(user.User);
-            _plugins.ForEach(s => s.OnPart(user.User, channel, reason));
+            List<CommandResponse> responses = new List<CommandResponse>();
+            _plugins.ForEach(s => responses.Add(s.OnPart(user.User, channel, reason)));
+            CommandRespond(responses, user.User);
         }
 
-        void IrcOnNames(string channel, string[] nicks, bool last)
+        public void IrcOnNames(string channel, string[] nicks, bool last)
         {
             //Add list of names to the current user list.
             _users.AddRange(nicks);
             _plugins.ForEach(s => s.OnNames(channel, nicks, last));
         }
 
-        private void IrcRegistered()
+        public void IrcRegistered()
         {
             //Turn off the Identd Server
             if(Identd.IsRunning()) Identd.Stop();
@@ -165,7 +196,7 @@ namespace ModularBotServer
             _plugins.ForEach(s => s.OnRegistered());
         }
 
-        void OnChannelModeChange(UserInfo who, string channel, ChannelModeInfo[] modes)
+        public void OnChannelModeChange(UserInfo who, string channel, ChannelModeInfo[] modes)
         {
             foreach (var mode in modes)
             {
@@ -197,6 +228,66 @@ namespace ModularBotServer
             
             foreach(var mode in modes)
             	_plugins.ForEach(s => s.OnChannelModeChange(who.User, channel,mode.Mode.ToString()));
+        }
+        #endregion
+        
+                
+        private void CommandRespond(List<CommandResponse> responses, string user)
+        {
+        	foreach(var response in responses) if(response != null) CommandRespond(response, user);
+        }
+        
+        private void CommandRespond(CommandResponse response, string user)
+        {
+        	//Check to see if there was any response
+            if (response == null) return;
+
+            //Check for response message
+            if(!string.IsNullOrWhiteSpace(response.Message))
+            {
+                //Sends the required message
+                SendMessage(response.Message);
+            }
+
+            //Create an action response only if you have moderator
+            if(response.Action != CommandResponse.ResponseAction.None)
+            {
+                //Make sure it has the permissions
+                if (!_hasMod) return;
+
+                //Message containing action info
+                var message = "";
+                switch(response.Action)
+                {
+                    case(CommandResponse.ResponseAction.Timeout):
+                        message = "/timeout " + user;
+                        break;
+                    case (CommandResponse.ResponseAction.Purge):
+                        message = "/timeout " + user + " 1";
+                        break;
+                    case (CommandResponse.ResponseAction.Ban):
+                        message = "/ban " + user;
+                        break;
+                }
+
+                //Send the response message
+                if(!string.IsNullOrWhiteSpace(message))
+                {
+                    SendMessage(message);
+                }
+            }
+        }
+		
+        private void SendMessage(string message)
+        {
+            //Sends the public message
+            _irc.Sender.PublicMessage("#" + _channel.ToLower(), message);
+            _output.ThrowInfo("Sent: " + message);
+        }
+        
+        public void Disconnect()
+        {
+        	if(_irc != null && _irc.Connected) _irc.Disconnect("Stopping");
         }
 	}
 }
