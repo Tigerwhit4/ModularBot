@@ -1,0 +1,30 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+# SharpDevelop 4.3
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModularBotServer", "ModularBotServer\ModularBotServer.csproj", "{A735F892-E43F-4B02-A420-174DE130E66A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModularBot", "ModularBot\ModularBot.csproj", "{30386C2E-B5FC-461E-BB30-3C1E26692568}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModularBotTest", "ModularBotTest\ModularBotTest.csproj", "{9D674652-9CFC-4C2D-AC14-AEFCAE1EDC4B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A735F892-E43F-4B02-A420-174DE130E66A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A735F892-E43F-4B02-A420-174DE130E66A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A735F892-E43F-4B02-A420-174DE130E66A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A735F892-E43F-4B02-A420-174DE130E66A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{30386C2E-B5FC-461E-BB30-3C1E26692568}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{30386C2E-B5FC-461E-BB30-3C1E26692568}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{30386C2E-B5FC-461E-BB30-3C1E26692568}.Release|Any CPU.Build.0 = Release|Any CPU
+		{30386C2E-B5FC-461E-BB30-3C1E26692568}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9D674652-9CFC-4C2D-AC14-AEFCAE1EDC4B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9D674652-9CFC-4C2D-AC14-AEFCAE1EDC4B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9D674652-9CFC-4C2D-AC14-AEFCAE1EDC4B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9D674652-9CFC-4C2D-AC14-AEFCAE1EDC4B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+	EndGlobalSection
+EndGlobal

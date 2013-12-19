@@ -1,0 +1,105 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build">
+  <PropertyGroup>
+    <ProjectGuid>{A735F892-E43F-4B02-A420-174DE130E66A}</ProjectGuid>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>ModularBotServer</RootNamespace>
+    <AssemblyName>ModularBotServer</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Platform)' == 'AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <Prefer32Bit>True</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <OutputPath>bin\Debug\</OutputPath>
+    <DebugSymbols>True</DebugSymbols>
+    <DebugType>Full</DebugType>
+    <Optimize>False</Optimize>
+    <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <OutputPath>bin\Release\</OutputPath>
+    <DebugSymbols>False</DebugSymbols>
+    <DebugType>None</DebugType>
+    <Optimize>True</Optimize>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+    <DefineConstants>TRACE</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition">
+      <RequiredTargetFramework>4.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.DataSetExtensions">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="IServerMenuBuilder.cs" />
+    <Compile Include="ModularBotServer.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ServerMenuBuilder.cs" />
+    <Compile Include="ServerOutput.cs" />
+    <Compile Include="ThresherIRC\ChannelModeInfo.cs" />
+    <Compile Include="ThresherIRC\CommandBuilder.cs" />
+    <Compile Include="ThresherIRC\Connection.cs" />
+    <Compile Include="ThresherIRC\ConnectionArgs.cs" />
+    <Compile Include="ThresherIRC\Ctcp\CtcpListener.cs" />
+    <Compile Include="ThresherIRC\Ctcp\CtcpResponder.cs" />
+    <Compile Include="ThresherIRC\Ctcp\CtcpSender.cs" />
+    <Compile Include="ThresherIRC\Ctcp\CtcpUtil.cs" />
+    <Compile Include="ThresherIRC\Dcc\DccChatSession.cs" />
+    <Compile Include="ThresherIRC\Dcc\DccFileInfo.cs" />
+    <Compile Include="ThresherIRC\Dcc\DccFileSession.cs" />
+    <Compile Include="ThresherIRC\Dcc\DccFileSessionManager.cs" />
+    <Compile Include="ThresherIRC\Dcc\DccListener.cs" />
+    <Compile Include="ThresherIRC\Dcc\DccUserInfo.cs" />
+    <Compile Include="ThresherIRC\Dcc\DccUtil.cs" />
+    <Compile Include="ThresherIRC\Delegates.cs" />
+    <Compile Include="ThresherIRC\Enums.cs" />
+    <Compile Include="ThresherIRC\Identd.cs" />
+    <Compile Include="ThresherIRC\IParser.cs" />
+    <Compile Include="ThresherIRC\Listener.cs" />
+    <Compile Include="ThresherIRC\NameGenerator.cs" />
+    <Compile Include="ThresherIRC\ReplyCode.cs" />
+    <Compile Include="ThresherIRC\Rfc2812Util.cs" />
+    <Compile Include="ThresherIRC\Sender.cs" />
+    <Compile Include="ThresherIRC\ServerProperties.cs" />
+    <Compile Include="ThresherIRC\TextColor.cs" />
+    <Compile Include="ThresherIRC\UserInfo.cs" />
+    <Compile Include="ThresherIRC\WhoisInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ModularBot\ModularBot.csproj">
+      <Project>{30386C2E-B5FC-461E-BB30-3C1E26692568}</Project>
+      <Name>ModularBot</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="ThresherIRC" />
+    <Folder Include="ThresherIRC\Ctcp" />
+    <Folder Include="ThresherIRC\Dcc" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
