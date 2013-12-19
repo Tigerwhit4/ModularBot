@@ -11,12 +11,15 @@ namespace ModularBot
 	/// <summary>
 	/// Description of IServerOutput.
 	/// </summary>
-	public interface IServerOutput
+	public interface IServerOutput : IPluginOutput
 	{
+		void ThrowPluginError(string pluginName, string errorMessage);
+		void ThrowPluginInfo(string pluginName, string infoMessage);
 		void ThrowError(string errorMessage);
 		void ThrowInfo(string infoMessage);
 		void ThrowMenu(int menuOption, string menuMessage);
 		void ThrowMessage(string messageType, string message);
 		void ClearMessages();
+		void Pause();
 	}
 }

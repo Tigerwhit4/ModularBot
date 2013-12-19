@@ -49,7 +49,7 @@
   <ItemGroup>
     <Compile Include="CommandResponse.cs" />
     <Compile Include="IModularPlugin.cs" />
-    <Compile Include="IServerOutput.cs" />
+    <Compile Include="IPluginOutput.cs" />
     <Compile Include="ModularPlugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

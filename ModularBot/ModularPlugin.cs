@@ -14,11 +14,11 @@ namespace ModularBot
 	/// </summary>
 	public abstract class ModularPlugin : IModularPlugin
 	{
-		protected IServerOutput m_output;
+		protected IPluginOutput m_Output;
 		
-		public void SetOutput(IServerOutput output)
+		public void SetOutput(IPluginOutput output)
 		{
-			m_output = output;
+			m_Output = output;
 		}
 		
 		public abstract string GetPluginName();

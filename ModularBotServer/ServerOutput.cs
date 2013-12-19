@@ -41,5 +41,33 @@ namespace ModularBotServer
 		{
 			Console.Clear();
 		}
+		
+		public void Pause()
+		{
+			Console.WriteLine("Press any key to continue...");
+			Console.ReadKey();
+		}
+		
+		public void ThrowPluginError(string pluginName, string errorMessage)
+		{
+			string pluginError = "[{0}] {1}";
+			ThrowError(string.Format(pluginError, pluginName, errorMessage));
+		}
+		
+		public void ThrowPluginInfo(string pluginName, string infoMessage)
+		{
+			string pluginInfo = "[{0}] {1}";
+			ThrowInfo(string.Format(pluginInfo, pluginName, infoMessage));
+		}
+		
+		public void ThrowPluginInfo(IModularPlugin plugin, string infoMessage)
+		{
+			ThrowPluginInfo(plugin.GetPluginName(), infoMessage);
+		}
+		
+		public void ThrowPluginError(IModularPlugin plugin, string errorMessage)
+		{
+			ThrowPluginError(plugin.GetPluginName(), errorMessage);
+		}
 	}
 }

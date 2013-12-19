@@ -20,22 +20,29 @@ namespace ModularBotTest
 		
 		public override void Stop()
 		{
-			throw new NotImplementedException();
+			m_Output.ThrowPluginInfo(this, "Successfully Stopped");
 		}
 		
 		public override void Start()
 		{
-			throw new NotImplementedException();
+			m_Output.ThrowPluginInfo(this, "Successfully Started");
 		}
 		
 		public override void Init()
 		{
-			m_output.ThrowInfo(string.Format("[{0}] Loaded!", name));
+			m_Output.ThrowPluginInfo(this, "Loaded!");
 		}
 		
 		public override string GetPluginName()
 		{
 			return name;
+		}
+		
+		public override CommandResponse OnPublic(string user, string channel, string message)
+		{
+			CommandResponse response = CommandResponse.None;
+			response.Message = user + " said " + message;
+			return response;
 		}
 	}
 }

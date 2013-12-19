@@ -50,10 +50,13 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IServerIRCConnection.cs" />
     <Compile Include="IServerMenuBuilder.cs" />
+    <Compile Include="IServerOutput.cs" />
     <Compile Include="ModularBotServer.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ServerIRCConnection.cs" />
     <Compile Include="ServerMenuBuilder.cs" />
     <Compile Include="ServerOutput.cs" />
     <Compile Include="ThresherIRC\ChannelModeInfo.cs" />

@@ -26,6 +26,7 @@ namespace ModularBotServer
 		private IServerOutput m_Output;
 		private IServerMenuBuilder m_MenuBuilder;
 		private List<IModularPlugin> m_Plugins;
+		private IServerIRCConnection m_IRCConnection;
 		
 		public ModularBotServer()
 		{
@@ -40,6 +41,10 @@ namespace ModularBotServer
 			//Run init
 			InitPlugins();
 			
+			//Connect to the IRC
+			if(!SetupIRC()) 
+				return;
+			
 			//Start the plugins
 			StartPlugins();
 			
@@ -50,6 +55,46 @@ namespace ModularBotServer
 			m_MenuBuilder = new ServerMenuBuilder(m_Plugins, m_Output);
 		}
 		
+		private bool SetupIRC()
+		{
+			m_IRCConnection = new ServerIRCConnection();
+			
+			string username = "", password = "", channel = "";
+			username = ConfigurationManager.AppSettings["IRCUsername"];
+			password = ConfigurationManager.AppSettings["IRCPassword"];
+			channel = ConfigurationManager.AppSettings["IRCChannel"];
+			
+			if(string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password)) 
+			{
+				Abort("Username and/or password is empty");
+				return false;
+			}
+			
+			if(string.IsNullOrEmpty(channel))
+			{
+				Abort("Channel setting is empty");
+				return false;
+			}
+			
+			//Set the command prefix
+			string commandPrefix = ConfigurationManager.AppSettings["CommandPrefix"];
+			m_IRCConnection.SetCommandPrefix(commandPrefix);
+			if(string.IsNullOrEmpty(commandPrefix))
+			{
+				m_Output.ThrowError("No command prefix was set");
+			}
+			
+			if(!m_IRCConnection.Connect(channel, username, password))
+			{
+				Abort("Could not connect to the chat");
+				return false;
+			}
+			
+			m_Output.ThrowInfo("Connected!");
+			return true;
+		}
+		
+		#region Plugins
 		private void LoadPlugins()
 		{
 			//Inform user
@@ -72,22 +117,29 @@ namespace ModularBotServer
 			string startupPath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
 			string[] pluginFiles = Directory.GetFiles(pluginLocation, "*.dll");
 			
-			
-			var plugins = (
-			    // From each file in the files.
-			    from file in pluginFiles
-			    // Load the assembly.
-			    let asm = Assembly.LoadFile(startupPath + "\\" + file)
-			    // For every type in the assembly that is visible outside of
-			    // the assembly.
-			    from type in asm.GetExportedTypes()
-			    // Where the type implements the interface.
-			    where typeof(ModularPlugin).IsAssignableFrom(type)
-			    // Create the instance.
-			    select (ModularPlugin) Activator.CreateInstance(type)
-			).ToArray();
-			
-			m_Plugins.AddRange(plugins);
+			try
+			{
+				var plugins = (
+				    // From each file in the files.
+				    from file in pluginFiles
+				    // Load the assembly.
+				    let asm = Assembly.LoadFile(startupPath + "\\" + file)
+				    // For every type in the assembly that is visible outside of
+				    // the assembly.
+				    from type in asm.GetExportedTypes()
+				    // Where the type implements the interface.
+				    where typeof(ModularPlugin).IsAssignableFrom(type)
+				    // Create the instance.
+				    select (ModularPlugin) Activator.CreateInstance(type)
+				).ToArray();
+				
+							
+				m_Plugins.AddRange(plugins);
+			}
+			catch(Exception ex)
+			{
+				m_Output.ThrowError(ex.Message);
+			}
 		}
 		
 		private void InitPlugins()
@@ -103,15 +155,41 @@ namespace ModularBotServer
 				}
 				catch(Exception ex)
 				{
-					m_Output.ThrowError(ex.Message);
+					m_Output.ThrowPluginError(plugin.GetPluginName(), ex.Message);
 				}
 			}
 		}
 		
 		private void StartPlugins()
 		{
-			
+			foreach(ModularPlugin plugin in m_Plugins)
+			{
+				try
+				{
+					plugin.Start();
+				}
+				catch(Exception ex)
+				{
+					m_Output.ThrowPluginError(plugin.GetPluginName(), ex.Message);
+				}
+			}
 		}
+		
+		private void StopPlugins()
+		{
+			foreach(ModularPlugin plugin in m_Plugins)
+			{
+				try
+				{
+					plugin.Stop();
+				}
+				catch(Exception ex)
+				{
+					m_Output.ThrowError(ex.Message);
+				}
+			}
+		}
+		#endregion
 		
 		private void ListenLoop()
 		{
@@ -129,6 +207,18 @@ namespace ModularBotServer
 				
 				blocking = m_MenuBuilder.BuildMenu(input);
 			} while(blocking);
+			
+			//Run the stop code
+			StopPlugins();
+			
+			//Leave a final readkey before exiting
+			m_Output.Pause();
+		}
+		
+		private void Abort(string abortReason)
+		{
+			m_Output.ThrowError("Abort: " + abortReason);
+			m_Output.Pause();
 		}
 	}
 }

@@ -23,7 +23,7 @@ namespace ModularBot
 		string GetPluginName();
 		
 		//Implementable by the server
-		void SetOutput(IServerOutput output);
+		void SetOutput(IPluginOutput output);
 		
 		//IRC Actions
 		CommandResponse OnRegistered();
