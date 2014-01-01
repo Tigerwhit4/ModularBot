@@ -20,6 +20,8 @@ namespace ModularBotServer
 		bool Connect(string username, string password);
 		bool Connect(string channel, string username, string password);
 		
+		bool IsConnected();
+		
 		void Disconnect();
 		
 		void ResetConnection();

@@ -111,7 +111,7 @@ namespace ModularBotServer
 		#region IRC Actions
 		public void IrcPublic(UserInfo user, string channel, string message)
         {
-			List<CommandResponse> responses = new List<CommandResponse>();
+			List<ServerCommandResponse> responses = new List<ServerCommandResponse>();
 			
 			//Check for command
 			if(message.StartsWith(_commandPrefix))
@@ -125,20 +125,15 @@ namespace ModularBotServer
 				for(int i = 0; i < args.Length; i++)
 					args[i] = commandSplit[i+1];
 				
-				_plugins.ForEach(s => responses.Add(s.OnCommand(user.User, command, args)));
+				_plugins.ForEach(s => responses.Add(ServerCommandResponse.ParseServerCommandResponse(s.OnCommand(user.User, command, args), s)));
 			}
-			foreach(var plugin in _plugins)
-			{
-				var response = plugin.OnPublic(user.User, channel, message);
-				responses.Add(response);
-			}
-			//_plugins.ForEach(s => responses.Add(s.OnPublic(user.User, channel, message)));
+			_plugins.ForEach(s => responses.Add(ServerCommandResponse.ParseServerCommandResponse(s.OnPublic(user.User, channel, message), s)));
 			CommandRespond(responses, user.User);
         }
 
         public void IrcPrivate(UserInfo user, string message)
         {
-        	List<CommandResponse> responses = new List<CommandResponse>();
+        	List<ServerCommandResponse> responses = new List<ServerCommandResponse>();
             //Split into parts
             var messageSplit = message.Split(' ');
             //Check for empty array
@@ -153,7 +148,7 @@ namespace ModularBotServer
             {
                 _admins.Add(messageSplit[1]);
             }
-            _plugins.ForEach(s => responses.Add(s.OnPrivate(user.User, message)));
+            _plugins.ForEach(s => responses.Add(ServerCommandResponse.ParseServerCommandResponse(s.OnPrivate(user.User, message), s)));
             CommandRespond(responses, user.User);
         }
 
@@ -164,8 +159,8 @@ namespace ModularBotServer
                 _irc.Sender.Raw("JTVCLIENT"); //Allows the bot to receive OP/Mod and sub info
 
             _users.Add(user.User);
-            List<CommandResponse> responses = new List<CommandResponse>();
-            _plugins.ForEach(s => responses.Add(s.OnJoined(user.User, channel)));
+            List<ServerCommandResponse> responses = new List<ServerCommandResponse>();
+            _plugins.ForEach(s => responses.Add(ServerCommandResponse.ParseServerCommandResponse(s.OnJoined(user.User, channel), s)));
             CommandRespond(responses, user.User);
         }
 
@@ -174,8 +169,8 @@ namespace ModularBotServer
             _users.Remove(user.User);
 
             if (_moderators.Contains(user.User)) _moderators.Remove(user.User);
-            List<CommandResponse> responses = new List<CommandResponse>();
-            _plugins.ForEach(s => responses.Add(s.OnPart(user.User, channel, reason)));
+            List<ServerCommandResponse> responses = new List<ServerCommandResponse>();
+            _plugins.ForEach(s => responses.Add(ServerCommandResponse.ParseServerCommandResponse(s.OnPart(user.User, channel, reason), s)));
             CommandRespond(responses, user.User);
         }
 
@@ -232,12 +227,12 @@ namespace ModularBotServer
         #endregion
         
                 
-        private void CommandRespond(List<CommandResponse> responses, string user)
+        private void CommandRespond(List<ServerCommandResponse> responses, string user)
         {
         	foreach(var response in responses) if(response != null) CommandRespond(response, user);
         }
         
-        private void CommandRespond(CommandResponse response, string user)
+        private void CommandRespond(ServerCommandResponse response, string user)
         {
         	//Check to see if there was any response
             if (response == null) return;
@@ -247,6 +242,7 @@ namespace ModularBotServer
             {
                 //Sends the required message
                 SendMessage(response.Message);
+                _output.ThrowPluginInfo(response.Plugin.GetPluginName(), "Sent: " + response.Message);
             }
 
             //Create an action response only if you have moderator
@@ -274,6 +270,7 @@ namespace ModularBotServer
                 if(!string.IsNullOrWhiteSpace(message))
                 {
                     SendMessage(message);
+                    _output.ThrowPluginInfo(response.Plugin.GetPluginName(), "Sent: " + message);
                 }
             }
         }
@@ -282,12 +279,16 @@ namespace ModularBotServer
         {
             //Sends the public message
             _irc.Sender.PublicMessage("#" + _channel.ToLower(), message);
-            _output.ThrowInfo("Sent: " + message);
         }
         
         public void Disconnect()
         {
         	if(_irc != null && _irc.Connected) _irc.Disconnect("Stopping");
+        }
+        
+        public bool IsConnected()
+        {
+        	return _irc.Connected;
         }
 	}
 }

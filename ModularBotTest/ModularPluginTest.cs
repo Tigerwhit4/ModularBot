@@ -42,17 +42,22 @@ namespace ModularBotTest
 		{
 			if(command == "info" && args.Length == 0)
 			{
-				return new CommandResponse("This is the ModularBot Test Plugin. Type \"!info 1\" to continue", CommandResponse.ResponseAction.None);
+				return new CommandResponse("This is the ModularBot Test Plugin. Type \"!info 1\" to continue.", CommandResponse.ResponseAction.None);
 			}
-			if(command == "info" && args.Length == 1)
+			else if(command == "info" && args.Length == 1)
 			{
 				switch (args[0]) {
 					case("1"):
-						return new CommandResponse("This plugin comes default with ModularBot to test it.", CommandResponse.ResponseAction.None);
-						break;
+						return new CommandResponse("This plugin comes default with ModularBot to test it. Type \"!info 2\" to continue.", CommandResponse.ResponseAction.None);
+					case("2"):
+						return new CommandResponse("For more information, visit the source at https://github.com/Redback93/ModularBot", CommandResponse.ResponseAction.None);
 					default:
 						break;
 				}
+			}
+			else if(command == "purge")
+			{
+				return new CommandResponse("Purged [" + user + "]", CommandResponse.ResponseAction.Purge);
 			}
 			return CommandResponse.None;
 		}

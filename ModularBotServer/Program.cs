@@ -5,16 +5,18 @@
  * 
  */
 using System;
+using System.Windows.Forms;
 
 namespace ModularBotServer
 {
-	class Program
+	internal sealed class Program
 	{
-		public static void Main(string[] args)
+		[STAThread]
+		private static void Main(string[] args)
 		{
-			ModularBotServer server = new ModularBotServer();
-			//Set server config
-			server.Start();
+			Application.EnableVisualStyles();
+			Application.SetCompatibleTextRenderingDefault(false);
+			Application.Run(new MainForm());
 		}
 	}
 }
